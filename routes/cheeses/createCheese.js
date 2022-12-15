@@ -1,25 +1,26 @@
-import useDB from "../../database.js"
+import Cheese from "../../models/cheese.model.js"
 
 export default async function createCheese(request, response) {
-	const { collection, client } = await useDB("cheeses")
-	
 	try {
 		const document = {
 			...request.body,
 			image: { ...request.file }
 		}
 
-		const result = await collection.findOneAndUpdate(
-			{ createdAt: Date.now() },
-			{ $set: { ...document } },
-			{ upsert: true, returnDocument: "after" }
-		)
-		client.close()
-		
+		const cheese = new Cheese(document)
+
+		await cheese.save()
+
 		response.status(201)
-		response.json(result.value)
+		response.json(cheese)
 		response.end()
 	} catch (error) {
+		if (error._message) {
+			response.status(400)
+			response.end()
+			return
+		}
+
 		console.log("create cheese error", error)
 		response.status(500)
 		response.end()

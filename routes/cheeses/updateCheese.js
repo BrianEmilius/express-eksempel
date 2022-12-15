@@ -1,9 +1,7 @@
-import { ObjectId } from "mongodb"
-import useDB from "../../database.js"
 import { unlink } from "node:fs/promises"
+import Cheese from "../../models/cheese.model.js"
 
 export default async function updateCheese(request, response) {
-	const { collection, client } = await useDB("cheeses")
 	
 	try {
 	
@@ -16,21 +14,26 @@ export default async function updateCheese(request, response) {
 				...request.body,
 				image: { ...request.file }
 			}
-			const oldResult = await collection.findOne({ _id: ObjectId(request.params.id) })
+			const oldResult = await Cheese.findById(request.params.id)
 			await unlink(oldResult.image.path)
 		}
 
-		const result = await collection.findOneAndUpdate(
-			{ _id: ObjectId(request.params.id) },
-			{ $set: { ...document } },
-			{ returnDocument: "after" }
+		const result = await Cheese.findByIdAndUpdate(
+			request.params.id,
+			document,
+			{ returnOriginal: false }
 		)
-		client.close()
 
-		response.status(201)
-		response.json(result.value)
+		response.status(200)
+		response.json(result)
 		response.end()
 	} catch (error) {
+		if (error._message) {
+			response.status(400)
+			response.end()
+			return
+		}
+
 		console.log("update cheese error", error)
 		response.status(500)
 		response.end()
