@@ -1,4 +1,3 @@
-import bcrypt from "bcrypt"
 import User from "../../models/user.model.js"
 
 export default async function createUser(request, response) {
@@ -16,14 +15,11 @@ export default async function createUser(request, response) {
 		return
 	}
 
-	const saltRounds = 10
-	const hash = await bcrypt.hash(request.body.password, saltRounds)
-
 	try {
 		// create ze document
 		const user = new User({
 			username: request.body.username,
-			password: hash
+			password: request.body.password
 		})
 
 		await user.save() // save ze document

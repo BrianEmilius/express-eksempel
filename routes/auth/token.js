@@ -1,5 +1,4 @@
 import User from "../../models/user.model.js"
-import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 dotenv.config()
@@ -13,13 +12,14 @@ export default async function token(request, response) {
 
 	try {
 		const user = await User.findOne({ username: request.body.username })
+			.select("password")
 		if (!user) {
 			response.status(403)
 			response.end()
 			return
 		}
 
-		if (!await bcrypt.compare(request.body.password, user.password)) {
+		if (!await user.authenticate(request.body.password)) {
 			response.status(403)
 			response.end()
 			return

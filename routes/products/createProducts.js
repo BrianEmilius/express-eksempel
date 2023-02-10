@@ -1,18 +1,18 @@
-import Cheese from "../../models/cheese.model.js"
+import Product from "../../models/product.model.js"
 
-export default async function createCheese(request, response) {
+export default async function createProducts(request, response) {
 	try {
 		const document = {
 			...request.body,
 			image: { ...request.file }
 		}
 
-		const cheese = new Cheese(document)
+		const product = new Product(document)
 
-		await cheese.save()
+		await product.save()
 
 		response.status(201)
-		response.json(cheese)
+		response.json(product)
 		response.end()
 	} catch (error) {
 		if (error._message) {
@@ -21,7 +21,7 @@ export default async function createCheese(request, response) {
 			return
 		}
 
-		console.log("create cheese error", error)
+		console.log("create product error", error)
 		response.status(500)
 		response.end()
 	}
